@@ -57,4 +57,26 @@ export class LayerClient {
   getLayer(layer_id){
     return this.layers[layer_id]
   }
+
+  newLayer(layer_details){
+    let headers = {
+      "Content-Type": "application/json"
+    };
+    if(this.jwt){
+      // headers["Authorization"] = 'Bearer ' + this.jwt;
+    }
+    return fetch(this.endpoint + '/layers', {
+        method: 'POST',
+        headers: headers,
+        credentials: 'include',
+        body: JSON.stringify(layer_details),
+      }).then((response) => response.json())
+    .then((metadata) => {
+      let layer = syncedLayerFromMetadata(this.endpoint, metadata)
+      this.layers[metadata.id] = layer;
+      let event = new CustomEvent("lc:new-layer", {detail: layer});
+      document.dispatchEvent(event);
+      return layer;
+    });
+}
 }

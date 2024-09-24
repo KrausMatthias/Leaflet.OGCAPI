@@ -176,13 +176,6 @@ export async function sendData(url = "", data = {}, token="", method='PUT') {
   }
 }
 
-export function newLayer(endpoint, layer_details){
-  return sendData(endpoint + '/layers',
-    layer_details,
-    "",
-    "POST",
-  ).then((metadata) => syncedLayerFromMetadata(endpoint, metadata));
-}
 
 export function syncedLayerFromMetadata(endpoint, metadata){
 
