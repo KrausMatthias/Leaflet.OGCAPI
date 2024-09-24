@@ -70,13 +70,13 @@ export let SyncedLayer = L.GeoJSON.extend({
 
   configure(new_metadata){
     // FIXME workaround for mixed metadata / feature collection endpoint
-    return sendData(this.options.endpoint + "/" + this.options.id, {...new_metadata, type: "FeatureCollection", features:[]}, this.options.jwt).then((data) => {
+    return sendData(this.options.endpoint + "/layers/" + this.options.id, {...new_metadata, type: "FeatureCollection", features:[]}, this.options.jwt).then((data) => {
       this.options = {...this.options, ...new_metadata};
     });
   },
   
   delete(){
-    return sendData(this.options.endpoint + "/" + this.options.id, {}, this.options.jwt, "DELETE");
+    return sendData(this.options.endpoint + "/layers/" + this.options.id, {}, this.options.jwt, "DELETE");
   },
 
   getLayerId(layer){
@@ -177,7 +177,7 @@ export async function sendData(url = "", data = {}, token="", method='PUT') {
 }
 
 export function newLayer(endpoint, layer_details){
-  return sendData(endpoint,
+  return sendData(endpoint + '/layers',
     layer_details,
     "",
     "POST",
