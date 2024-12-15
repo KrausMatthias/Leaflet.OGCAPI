@@ -1,0 +1,25 @@
+{
+  "name": "Leaflet.OGCAPI.Features",
+  "version": "0.1.0",
+  "description": "Pragmatic implementation of OGC API -- Features Parts 1 and 4",
+  "main": "src/LayerClient.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KrausMatthias/Leaflet.OGCAPI.git"
+  },
+  "keywords": [
+    "javascript",
+    "maps",
+    "leaflet",
+    "ogcapi"
+  ],
+  "author": "Matthias Kraus",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KrausMatthias/Leaflet.OGCAPI/issues"
+  },
+  "homepage": "https://github.com/KrausMatthias/Leaflet.OGCAPI#readme",
+  "dependencies": {
+    "leaflet": "^1.0.1"
+  }
+}
