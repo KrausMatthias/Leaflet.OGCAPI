@@ -6,7 +6,6 @@ export let SyncedLayer = L.GeoJSON.extend({
 
     L.setOptions(this, {
       endpoint: endpoint,
-      // style: simplestyle,
       fetch_options: {},
       ...options,
     });
@@ -111,7 +110,6 @@ export let SyncedLayer = L.GeoJSON.extend({
         layer.feature['properties'] = feature.properties;
 
         this.addLayer(layer);
-        // try{ layer.setStyle(simplestyle(layer.feature)); }catch{console.error("Failed to style"); console.error(layer.feature)}
 
         if(this.options.onEachFeature){
           this.options.onEachFeature(layer.feature, layer);
@@ -124,7 +122,9 @@ export let SyncedLayer = L.GeoJSON.extend({
     let feature = layer.toGeoJSON(5);
     feature.properties._sync_token = this.sync_token;
     debounce(sendData(this.options.endpoint + "/collections/" + this.options.id + "/items/" + feature.id, feature, this.options.jwt).then((data) => {
-      // try{ layer.setStyle(simplestyle(layer.feature)); }catch{console.error("Failed to style"); console.error(layer.feature)}
+        if(this.options.onEachFeature){
+          this.options.onEachFeature(layer.feature, layer);
+        }
     }), 500);
   },
 
@@ -132,8 +132,8 @@ export let SyncedLayer = L.GeoJSON.extend({
 		if (this.hasLayer(layer)) {
 			L.GeoJSON.prototype.removeLayer.call(this, this.getLayer(layer.feature.id));
 		}
+    layer.collection = this;
     layer.addEventParent(this);
-
 		L.LayerGroup.prototype.addLayer.call(this, layer);
 
 		// @event layeradd: LayerEvent
@@ -142,7 +142,6 @@ export let SyncedLayer = L.GeoJSON.extend({
 	},
 
   removeOnlineLayer(layer) {
-    // let feature = layer.toGeoJSON(5);
     sendData(this.options.endpoint + "/collections/" + this.options.id + "/items/" + layer.feature.id, {}, this.options.jwt, 'DELETE').then((data) => {
       L.GeoJSON.prototype.removeLayer.call(this, layer);
     });
@@ -193,6 +192,11 @@ export async function sendData(url = "", data = {}, token="", method='PUT') {
 
 export function syncedLayerFromMetadata(endpoint, metadata, options){
 
+      options = {
+        ...options,
+        ...metadata
+      }
+
       let slayer = new SyncedLayer(false, {
         endpoint: endpoint,
         id: metadata.id, title: metadata.title, description: metadata.description || "", feature_time_to_live: metadata.feature_time_to_live, 
@@ -200,28 +204,15 @@ export function syncedLayerFromMetadata(endpoint, metadata, options){
         acl: metadata.acl,
         pointToLayer: (geoJsonPoint, latlng) => {
           if(geoJsonPoint.properties.radius){
-            return L.circle(latlng, {radius: geoJsonPoint.properties.radius});
+            return L.circle(latlng, {...options, radius: geoJsonPoint.properties.radius});
           } else if(geoJsonPoint.properties.textMarker) {
-            let textmarker =  L.marker(latlng, {pmIgnore: false, textMarker: true, text: geoJsonPoint.properties.text || ""});
+            let textmarker =  L.marker(latlng, {...options, pmIgnore: false, textMarker: true, text: geoJsonPoint.properties.text || ""});
             return textmarker;
           } else {
-            return L.marker(latlng);
+            let marker = L.marker(latlng, options);
+            return marker;
           }
         },
-        onEachFeature: (feature, l) => {
-          if(!l.feature.properties.textMarker){
-            let edit_callback = false;
-            if(slayer.options.permissions?.write){
-              edit_callback = (new_properties) => {
-                l.feature.properties = new_properties;
-                return slayer.updateOnlineLayer(l);
-              };
-            };
-
-            // let popup_content =  () => getPoiPopupHTML(l.feature.properties, null, 'name', l.feature?.geometry, edit_callback, l.pm);
-            // l.bindPopup(popup_content, {minWidth: 230, closeButton: false});
-        }
-      },
       ...options,
       });
   return slayer;

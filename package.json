@@ -1,5 +1,5 @@
 {
-  "name": "Leaflet.OGCAPI.Features",
+  "name": "leaflet-ogcapi-features",
   "version": "0.1.0",
   "description": "Pragmatic implementation of OGC API -- Features Parts 1 and 4",
   "main": "src/LayerClient.js",
@@ -20,6 +20,10 @@
   },
   "homepage": "https://github.com/KrausMatthias/Leaflet.OGCAPI#readme",
   "dependencies": {
-    "leaflet": "^1.0.1",
+    "leaflet": "^1.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
