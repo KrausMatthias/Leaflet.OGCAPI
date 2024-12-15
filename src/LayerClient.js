@@ -7,9 +7,13 @@ export class LayerClient {
   layers;
   map;
 
-  constructor(endpoint, jwt=undefined){
+  constructor(endpoint, options={}, jwt=undefined){
     this.endpoint = endpoint;
-    this.jwt = jwt;
+
+    this.options = {
+      fetch_options: {},
+      ...options
+    }
     this.layers = {};
   }
 
@@ -19,21 +23,14 @@ export class LayerClient {
   }
 
   _load_layers(){
-    let headers = {
-      "Content-Type": "application/json"
-    };
-    if(this.jwt){
-      // headers["Authorization"] = 'Bearer ' + this.jwt;
-    }
 
-    return fetch(this.endpoint + '/layers', {
+    return fetch(this.endpoint + '/collections', {
+      ...this.options.fetch_options,
       method: 'GET',
-      headers: headers,
-      credentials: 'include',
     }).then((response) => response.json())
     .then((json) => {
-      json.forEach((metadata) => {
-        let layer = syncedLayerFromMetadata(this.endpoint, metadata);
+      json.collections.forEach((metadata) => {
+        let layer = syncedLayerFromMetadata(this.endpoint, metadata, this.options);
         this.layers[metadata.id] = layer;
         let event = new CustomEvent("lc:new-layer", {detail: layer});
         document.dispatchEvent(event);
@@ -62,17 +59,22 @@ export class LayerClient {
     let headers = {
       "Content-Type": "application/json"
     };
-    if(this.jwt){
-      // headers["Authorization"] = 'Bearer ' + this.jwt;
+    if(this.options.fetch_options.headers){
+      headers = {
+        ...this.options.fetch_options.headers,
+        headers
+      }
     }
-    return fetch(this.endpoint + '/layers', {
+
+
+    return fetch(this.endpoint + '/collections', {
+        ...this.options.fetch_options,
         method: 'POST',
         headers: headers,
-        credentials: 'include',
         body: JSON.stringify(layer_details),
       }).then((response) => response.json())
     .then((metadata) => {
-      let layer = syncedLayerFromMetadata(this.endpoint, metadata)
+      let layer = syncedLayerFromMetadata(this.endpoint, metadata, this.options)
       this.layers[metadata.id] = layer;
       let event = new CustomEvent("lc:new-layer", {detail: layer});
       document.dispatchEvent(event);

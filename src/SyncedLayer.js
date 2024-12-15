@@ -9,6 +9,7 @@ export let SyncedLayer = L.GeoJSON.extend({
     L.setOptions(this, {
       endpoint: endpoint,
       style: simplestyle,
+      fetch_options: {},
       ...options,
     });
 
@@ -20,30 +21,42 @@ export let SyncedLayer = L.GeoJSON.extend({
 
   },
 
-  load(){
-    fetch(this.options.endpoint + "/layers/" + this.options.id, {
+  _loadPage(url){
+    return fetch(url, {
       method: 'GET',
-      headers: {
-        "Content-Type": "application/json",
-        // Authorization: 'Bearer ' + this.options.jwt,
-      },
-      credentials: 'include',
+      ...this.options.fetch_options,
     }).then((response) => {
       if(response.ok) {
         return response.json()
       } else {
         return Promise.reject(response);
       }})
-    .then((json) => {
-      this.clearLayers();
-      this.addData(json);
-      this.fire("loaded");
-      this.loaded = true;
-    });
+  },
+
+  load(url=null, first=true){
+    this._loadPage(url ? url : this.options.endpoint + "/collections/" + this.options.id + "/items")
+      .then((json) => {
+        if(first){
+          this.clearLayers();
+        }
+        this.addData(json);
+        if(json.links){
+          json.links.forEach((link) => {
+            if(link.rel == "next"){
+              this.load(link.href, false)
+            }
+          })
+        }
+        if(first){
+          this.fire("loaded");
+          this.loaded = true;
+        }
+      });
+
   },
 
   subscribe(){
-    this.evtSource = new EventSource(this.options.endpoint + "/layers/" + this.options.id + "/subscribe", {
+    this.evtSource = new EventSource(this.options.endpoint + "/collections/" + this.options.id + "/subscribe", {
       withCredentials: true,
     });
     this.evtSource.onmessage = (event) => {
@@ -70,13 +83,13 @@ export let SyncedLayer = L.GeoJSON.extend({
 
   configure(new_metadata){
     // FIXME workaround for mixed metadata / feature collection endpoint
-    return sendData(this.options.endpoint + "/layers/" + this.options.id, {...new_metadata, type: "FeatureCollection", features:[]}, this.options.jwt).then((data) => {
+    return sendData(this.options.endpoint + "/collections/" + this.options.id, {...new_metadata, type: "FeatureCollection", features:[]}, this.options.jwt).then((data) => {
       this.options = {...this.options, ...new_metadata};
     });
   },
   
   delete(){
-    return sendData(this.options.endpoint + "/layers/" + this.options.id, {}, this.options.jwt, "DELETE").then(() => {
+    return sendData(this.options.endpoint + "/collections/" + this.options.id, {}, this.options.jwt, "DELETE").then(() => {
       let event = new CustomEvent("lc:deleted-layer", {detail: this});
       document.dispatchEvent(event);
     })
@@ -95,7 +108,7 @@ export let SyncedLayer = L.GeoJSON.extend({
       }
       try{ layer.setStyle({'color': "grey"}); }catch{}
 
-      return sendData(this.options.endpoint + "/layers/" + this.options.id + "/features", feature, this.options.jwt, 'POST').then((data) => {
+      return sendData(this.options.endpoint + "/collections/" + this.options.id + "/items", feature, this.options.jwt, 'POST').then((data) => {
         layer.feature['id'] = data;
         layer.feature['properties'] = feature.properties;
 
@@ -112,7 +125,7 @@ export let SyncedLayer = L.GeoJSON.extend({
     try{ layer.setStyle({'color': "grey"}); }catch{}
     let feature = layer.toGeoJSON(5);
     feature.properties._sync_token = this.sync_token;
-    debounce(sendData(this.options.endpoint + "/layers/" + this.options.id + "/features/" + feature.id, feature, this.options.jwt).then((data) => {
+    debounce(sendData(this.options.endpoint + "/collections/" + this.options.id + "/items/" + feature.id, feature, this.options.jwt).then((data) => {
       try{ layer.setStyle(simplestyle(layer.feature)); }catch{console.error("Failed to style"); console.error(layer.feature)}
     }), 500);
   },
@@ -132,7 +145,7 @@ export let SyncedLayer = L.GeoJSON.extend({
 
   removeOnlineLayer(layer) {
     // let feature = layer.toGeoJSON(5);
-    sendData(this.options.endpoint + "/layers/" + this.options.id + "/features/" + layer.feature.id, {}, this.options.jwt, 'DELETE').then((data) => {
+    sendData(this.options.endpoint + "/collections/" + this.options.id + "/items/" + layer.feature.id, {}, this.options.jwt, 'DELETE').then((data) => {
       L.GeoJSON.prototype.removeLayer.call(this, layer);
     });
   },
@@ -180,14 +193,13 @@ export async function sendData(url = "", data = {}, token="", method='PUT') {
 }
 
 
-export function syncedLayerFromMetadata(endpoint, metadata){
+export function syncedLayerFromMetadata(endpoint, metadata, options){
 
       let slayer = new SyncedLayer(false, {
         endpoint: endpoint,
         id: metadata.id, title: metadata.title, description: metadata.description || "", feature_time_to_live: metadata.feature_time_to_live, 
         permissions: metadata.permissions,
         acl: metadata.acl,
-        // jwt: parameters['jwt'],
         pointToLayer: (geoJsonPoint, latlng) => {
           if(geoJsonPoint.properties.radius){
             return L.circle(latlng, {radius: geoJsonPoint.properties.radius});
@@ -201,7 +213,7 @@ export function syncedLayerFromMetadata(endpoint, metadata){
         onEachFeature: (feature, l) => {
           if(!l.feature.properties.textMarker){
             let edit_callback = false;
-            if(slayer.options.permissions.write){
+            if(slayer.options.permissions?.write){
               edit_callback = (new_properties) => {
                 l.feature.properties = new_properties;
                 return slayer.updateOnlineLayer(l);
@@ -211,7 +223,8 @@ export function syncedLayerFromMetadata(endpoint, metadata){
             let popup_content =  () => getPoiPopupHTML(l.feature.properties, null, 'name', l.feature?.geometry, edit_callback, l.pm);
             l.bindPopup(popup_content, {minWidth: 230, closeButton: false});
         }
-      }
+      },
+      ...options,
       });
   return slayer;
 }
