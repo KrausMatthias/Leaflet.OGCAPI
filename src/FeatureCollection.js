@@ -1,5 +1,5 @@
 
-export let SyncedLayer = L.GeoJSON.extend({
+export let FeatureCollection = L.GeoJSON.extend({
 
   initialize: function(endpoint, options) {
 
@@ -197,7 +197,7 @@ export function syncedLayerFromMetadata(endpoint, metadata, options){
         ...metadata
       }
 
-      let slayer = new SyncedLayer(false, {
+      return new FeatureCollection(false, {
         endpoint: endpoint,
         id: metadata.id, title: metadata.title, description: metadata.description || "", feature_time_to_live: metadata.feature_time_to_live, 
         permissions: metadata.permissions,
@@ -215,5 +215,4 @@ export function syncedLayerFromMetadata(endpoint, metadata, options){
         },
       ...options,
       });
-  return slayer;
 }

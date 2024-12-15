@@ -1,6 +1,6 @@
-import {SyncedLayer, syncedLayerFromMetadata} from "./SyncedLayer.js"
+import {FeatureCollection, syncedLayerFromMetadata} from "./FeatureCollection.js"
 
-export class LayerClient {
+export class Collections {
 
   endpoint;
   layers;
@@ -79,5 +79,5 @@ export class LayerClient {
       document.dispatchEvent(event);
       return layer;
     });
-}
+  }
 }

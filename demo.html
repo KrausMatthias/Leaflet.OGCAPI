@@ -11,7 +11,7 @@
   <body>
     <div id="map" style="height: 100%"></div>
     <script type="module">
-      import {LayerClient} from "./src/LayerClient.js"
+      import {Collections} from "./src/Collections.js"
       var map = L.map('map').setView([0,0], 2); 
 
       let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -28,7 +28,7 @@
 
       let layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
 
-      let layer_client = new LayerClient(
+      let collections= new Collections(
         "https://demo.mapserver.org/cgi-bin/mapserv/localdemo/ogcapi",
         // {
 
@@ -37,7 +37,7 @@
         //   },
         // }
       );
-      layer_client.addTo(map);
+      collections.addTo(map);
 
       document.addEventListener("lc:new-layer", function(event) {
         let layer = event.detail;
