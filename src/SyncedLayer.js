@@ -1,5 +1,3 @@
-import {simplestyle} from '../simplestyle/simplestyle.js';
-import {getPoiPopupHTML} from '../BootstrapOverpassLayer.js';
 
 export let SyncedLayer = L.GeoJSON.extend({
 
@@ -8,7 +6,7 @@ export let SyncedLayer = L.GeoJSON.extend({
 
     L.setOptions(this, {
       endpoint: endpoint,
-      style: simplestyle,
+      // style: simplestyle,
       fetch_options: {},
       ...options,
     });
@@ -113,7 +111,7 @@ export let SyncedLayer = L.GeoJSON.extend({
         layer.feature['properties'] = feature.properties;
 
         this.addLayer(layer);
-        try{ layer.setStyle(simplestyle(layer.feature)); }catch{console.error("Failed to style"); console.error(layer.feature)}
+        // try{ layer.setStyle(simplestyle(layer.feature)); }catch{console.error("Failed to style"); console.error(layer.feature)}
 
         if(this.options.onEachFeature){
           this.options.onEachFeature(layer.feature, layer);
@@ -126,7 +124,7 @@ export let SyncedLayer = L.GeoJSON.extend({
     let feature = layer.toGeoJSON(5);
     feature.properties._sync_token = this.sync_token;
     debounce(sendData(this.options.endpoint + "/collections/" + this.options.id + "/items/" + feature.id, feature, this.options.jwt).then((data) => {
-      try{ layer.setStyle(simplestyle(layer.feature)); }catch{console.error("Failed to style"); console.error(layer.feature)}
+      // try{ layer.setStyle(simplestyle(layer.feature)); }catch{console.error("Failed to style"); console.error(layer.feature)}
     }), 500);
   },
 
@@ -220,8 +218,8 @@ export function syncedLayerFromMetadata(endpoint, metadata, options){
               };
             };
 
-            let popup_content =  () => getPoiPopupHTML(l.feature.properties, null, 'name', l.feature?.geometry, edit_callback, l.pm);
-            l.bindPopup(popup_content, {minWidth: 230, closeButton: false});
+            // let popup_content =  () => getPoiPopupHTML(l.feature.properties, null, 'name', l.feature?.geometry, edit_callback, l.pm);
+            // l.bindPopup(popup_content, {minWidth: 230, closeButton: false});
         }
       },
       ...options,

@@ -3,7 +3,6 @@ import {SyncedLayer, syncedLayerFromMetadata} from "./SyncedLayer.js"
 export class LayerClient {
 
   endpoint;
-  jwt;
   layers;
   map;
 

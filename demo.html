@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""></script>
+
+  </head>
+  <body>
+    <div id="map" style="height: 100%"></div>
+    <script type="module">
+      import {LayerClient} from "./src/LayerClient.js"
+      var map = L.map('map').setView([0,0], 2); 
+
+      let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+        
+
+      let baseMaps = {
+          "OpenStreetMap": osm,
+      };
+
+      let overlayMaps = {};
+
+      let layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+      let layer_client = new LayerClient(
+        "https://demo.mapserver.org/cgi-bin/mapserv/localdemo/ogcapi",
+        // {
+
+        //   fetch_options: {
+        //     credentials: 'include',
+        //   },
+        // }
+      );
+      layer_client.addTo(map);
+
+      document.addEventListener("lc:new-layer", function(event) {
+        let layer = event.detail;
+
+        layerControl.addOverlay(layer, layer.options.title);
+
+      });
+
+    </script>
+  </body>
+</html>
