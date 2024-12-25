@@ -33,11 +33,9 @@ export let FeatureCollection = L.GeoJSON.extend({
   load(url=null, first=true){
     this._loadPage(url ? url : this.options.endpoint + "/collections/" + this.options.id + "/items")
       .then((json) => {
-        if(first){
-          this.clearLayers();
-        }
         this.addData(json);
-        if(json.links){
+        // stop pagination if this layer is no longer added to a map
+        if(this._map && json.links){
           json.links.forEach((link) => {
             if(link.rel == "next"){
               this.load(link.href, false)
