@@ -96,7 +96,7 @@ export let FeatureCollection = L.GeoJSON.extend({
     return layer.feature.id;
   },
 
-  addOnlineLayer: function(layer) {
+  createFeature: function(layer) {
       let feature = layer.toGeoJSON(5);
       layer.feature = feature;
       feature.properties._sync_token = this.sync_token;
@@ -117,7 +117,7 @@ export let FeatureCollection = L.GeoJSON.extend({
       });
   },
 
-  updateOnlineLayer: function(layer) {
+  updateFeature: function(layer) {
     try{ layer.setStyle({'color': "grey"}); }catch{}
     let feature = layer.toGeoJSON(5);
     feature.properties._sync_token = this.sync_token;
@@ -141,7 +141,7 @@ export let FeatureCollection = L.GeoJSON.extend({
 		return this.fire('layeradd', {layer: layer});
 	},
 
-  removeOnlineLayer(layer) {
+  deleteFeature(layer) {
     sendData(this.options.endpoint + "/collections/" + this.options.id + "/items/" + layer.feature.id, {}, this.options.jwt, 'DELETE').then((data) => {
       L.GeoJSON.prototype.removeLayer.call(this, layer);
     });

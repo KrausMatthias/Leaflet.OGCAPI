@@ -54,7 +54,7 @@ export class Collections {
     return this.layers[layer_id]
   }
 
-  newLayer(layer_details){
+  createCollection(layer_details){
     let headers = {
       "Content-Type": "application/json"
     };
