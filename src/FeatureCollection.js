@@ -7,6 +7,8 @@ export let FeatureCollection = L.GeoJSON.extend({
     L.setOptions(this, {
       endpoint: endpoint,
       fetch_options: {},
+      pagination_limit: undefined, // set a pagination limit when requesting items, default undefined (uses server default limit)
+      feature_limit: undefined, // set a maximum number of features to load per collection, default undefined (unlimited number of features)
       ...options,
     });
 
@@ -30,18 +32,26 @@ export let FeatureCollection = L.GeoJSON.extend({
       }})
   },
 
-  load(url=null, first=true){
-    this._loadPage(url ? url : this.options.endpoint + "/collections/" + this.options.id + "/items")
+  load(url=null, first=true, offset=0){
+    let pagination_limit = (this.options.pagination_limit ? "?limit=" + this.options.pagination_limit : "" );
+    this._loadPage(url ? url : this.options.endpoint + "/collections/" + this.options.id + "/items" + pagination_limit)
       .then((json) => {
+        if (this.options.feature_limit){
+          json.features = json.features.slice(0, this.options.feature_limit);
+        }
         this.addData(json);
-        // stop pagination if this layer is no longer added to a map
-        if(this._map && json.links){
+        if(!this._map){
+          console.debug("Aborted pagination as layer is no longer visible on the map");
+        } else if(!this.options.feature_limit || offset + json.features.length < this.options.feature_limit){
+          console.warn("Maximum number of features reached. There might be features not shown.")
+        } else if (json.links){
           json.links.forEach((link) => {
             if(link.rel == "next"){
-              this.load(link.href, false)
+              this.load(link.href, false, offset + json.features.length)
             }
           })
         }
+
         if(first){
           this.fire("loaded");
           this.loaded = true;

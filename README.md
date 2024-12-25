@@ -19,6 +19,14 @@ See [demo.html](https://krausmatthias.github.io/Leaflet.OGCAPI/demo.html) for a 
      * Create/Update/Delete Collections on the Server
  * [OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002r1.html)
 
+## Options
+
+| | |
+| --- | --- |
+| fetch_options | Options applied to all fetch operations. Use this if you need to set e.g. Headers. |
+| pagination_limit | Maximum number of features to fetch in one batch. Default: Use Server default. |
+| feature_limit | Maximum total number of features to load. Default: unlimited. |
+
 ## Tested OGC API Implementations
 
 * [pygeoapi](https://pygeoapi.io/)
