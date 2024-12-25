@@ -30,9 +30,11 @@
 
       let layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
 
+      // mapserver.org
       let collections= new Collections(
         "https://demo.mapserver.org/cgi-bin/mapserv/localdemo/ogcapi",
         {
+          attribution: "<a href='https://demo.mapserver.org/' rel='noopener noreferrer' target='_blank'>Mapserver Demo</a>",
           onEachFeature: (feature, layer) => {
             layer.bindPopup(() => feature.properties.name);
           },
@@ -42,6 +44,30 @@
         }
       );
       collections.addTo(map);
+
+      // geoserver
+      let geoserver_collections = new Collections(
+        "https://geonovum.geosolutionsgroup.com/geoserver/ogc/features/v1",
+        {
+          attribution: "<a href='https://geonovum.geosolutionsgroup.com/geoserver/ogc/features/v1/' rel='noopener noreferrer' target='_blank'>GeoServer Sample INSPIRE Feature Service</a>",
+          onEachFeature: (feature, layer) => {
+            layer.bindPopup(() => "" + feature.properties.locator_designator_addressNumber + (feature.properties.locator_designator_addressNumberExtension || ""));
+          },
+        }
+      );
+      geoserver_collections.addTo(map);
+
+      // pygeoapi
+      let pygeoapi_collections = new Collections(
+        "https://demo.pygeoapi.io/stable",
+        {
+          attribution: "<a href='https://demo.pygeoapi.io/stable' rel='noopener noreferrer' target='_blank'>pygeoapi Demo instance</a> (<a href='https://creativecommons.org/licenses/by/4.0/' rel='noopener noreferrer' target='_blank'>CC-BY 4.0 license</a>)",
+          onEachFeature: (feature, layer) => {
+            layer.bindPopup(() => JSON.stringify(feature.properties, null, 1));
+          },
+        }
+      );
+      pygeoapi_collections.addTo(map);
 
       document.addEventListener("lc:new-layer", function(event) {
         let layer = event.detail;
