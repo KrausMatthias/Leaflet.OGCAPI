@@ -1,4 +1,5 @@
-import {FeatureCollection, syncedLayerFromMetadata} from "./FeatureCollection.js"
+import {FeatureCollection} from "./FeatureCollection.js"
+import {get_link} from "./utils.js"
 
 export class Collections {
 
@@ -29,10 +30,18 @@ export class Collections {
     }).then((response) => response.json())
     .then((json) => {
       json.collections.forEach((metadata) => {
-        let layer = syncedLayerFromMetadata(this.endpoint, metadata, this.options);
-        this.layers[metadata.id] = layer;
-        let event = new CustomEvent("lc:new-layer", {detail: layer});
-        document.dispatchEvent(event);
+        metadata["endpoint"] = this.endpoint;
+
+        let items_url = get_link(metadata.links, "items", "application/geo+json");
+        if(items_url){
+          let layer = new FeatureCollection(metadata, this.options);
+          this.layers[metadata.id] = layer;
+          let event = new CustomEvent("lc:new-layer", {detail: layer});
+          document.dispatchEvent(event);
+        }else{
+          console.info("Skipped collection without geojson items: " + metadata.title)
+        }
+
       });
     })
     .then(() => {
@@ -65,7 +74,6 @@ export class Collections {
       }
     }
 
-
     return fetch(this.endpoint + '/collections', {
         ...this.options.fetch_options,
         method: 'POST',
@@ -73,7 +81,9 @@ export class Collections {
         body: JSON.stringify(layer_details),
       }).then((response) => response.json())
     .then((metadata) => {
-      let layer = syncedLayerFromMetadata(this.endpoint, metadata, this.options)
+      metadata["endpoint"] = this.endpoint;
+      let layer = new FeatureCollection(metadata, this.options);
+
       this.layers[metadata.id] = layer;
       let event = new CustomEvent("lc:new-layer", {detail: layer});
       document.dispatchEvent(event);

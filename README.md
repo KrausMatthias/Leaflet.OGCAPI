@@ -18,6 +18,8 @@ See [demo.html](https://krausmatthias.github.io/Leaflet.OGCAPI/demo.html) for a 
      * Setup a Layer for each FeatureCollection
      * Create/Update/Delete Collections on the Server
  * [OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002r1.html)
+ * [link-relations](https://docs.ogc.org/is/17-069r4/17-069r4.html#_link_relations) for resolving resources
+
 
 ## Options
 
@@ -32,9 +34,6 @@ See [demo.html](https://krausmatthias.github.io/Leaflet.OGCAPI/demo.html) for a 
 * [pygeoapi](https://pygeoapi.io/)
 * [GeoServer](https://geoserver.org/)
 * [MapServer](https://www.mapserver.org/)
-
-## TODO
- * Use [link-relations](https://docs.ogc.org/is/17-069r4/17-069r4.html#_link_relations) for resolving resources
 
  ## Alternative implementations
 
