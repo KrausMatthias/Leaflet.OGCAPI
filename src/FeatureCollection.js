@@ -1,4 +1,4 @@
-import {get_link} from "./utils.js"
+import {get_link, fetch_with} from "./utils.js"
 
 export let FeatureCollection = L.GeoJSON.extend({
 
@@ -108,14 +108,22 @@ export let FeatureCollection = L.GeoJSON.extend({
   },
 
   configure(new_metadata){
-    // FIXME workaround for mixed metadata / feature collection endpoint
-    return sendData(this.options.self_url, {...new_metadata, type: "FeatureCollection", features:[]}, this.options.jwt).then((data) => {
-      this.options = {...this.options, metadata: new_metadata};
+    return fetch_with(
+      this.options.self_url, {
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(new_metadata), // body data type must match "Content-Type" header
+      },
+      this.options.fetch_options
+    ).then(() => {
+      this.options.metadata = {...this.options.metadata, ...new_metadata};
     });
   },
   
   delete(){
-    return sendData(this.options.self_url, {}, this.options.jwt, "DELETE").then(() => {
+    return fetch_with(this.options.self_url, {method: 'DELETE'},this.options.fetch_options).then(() => {
       let event = new CustomEvent("lc:deleted-layer", {detail: this});
       document.dispatchEvent(event);
     })
@@ -129,19 +137,25 @@ export let FeatureCollection = L.GeoJSON.extend({
       let feature = layer.toGeoJSON(5);
       layer.feature = feature;
       feature.properties._sync_token = this.sync_token;
-      if(this.options.metadata.feature_time_to_live) {
-        feature.properties.expiretime = feature.properties.expiretime || Math.floor(new Date().getTime()/1000 + this.options.metadata.feature_time_to_live)
-      }
       try{ layer.setStyle({'color': "grey"}); }catch{}
 
-      return sendData(this.options.items_url, feature, this.options.jwt, 'POST').then((data) => {
+      return fetch_with(
+        this.options.items_url, {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(feature), // body data type must match "Content-Type" header
+        },
+        this.options.fetch_options
+      ).then((resp) => resp.text()).then((data) => {
         layer.feature['id'] = data;
         layer.feature['properties'] = feature.properties;
 
         this.addLayer(layer);
 
         if(this.options.onEachFeature){
-          this.options.onEachFeature(layer.feature, layer);
+          this.options.onEachFeature(layer.feature, layer, this);
         }
       });
   },
@@ -150,9 +164,19 @@ export let FeatureCollection = L.GeoJSON.extend({
     try{ layer.setStyle({'color': "grey"}); }catch{}
     let feature = layer.toGeoJSON(5);
     feature.properties._sync_token = this.sync_token;
-    debounce(sendData(this.options.items_url + "/" + feature.id, feature, this.options.jwt).then((data) => {
+    debounce(fetch_with(
+      this.options.items_url + "/" + feature.id, 
+      {
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(feature)
+      }, 
+      this.options.fetch_options
+    ).then((data) => {
         if(this.options.onEachFeature){
-          this.options.onEachFeature(layer.feature, layer);
+          this.options.onEachFeature(layer.feature, layer, this);
         }
     }), 500);
   },
@@ -171,7 +195,7 @@ export let FeatureCollection = L.GeoJSON.extend({
 	},
 
   deleteFeature(layer) {
-    sendData(this.options.items_url + "/" + feature.id, {}, this.options.jwt, 'DELETE').then((data) => {
+    return fetch_with(this.options.items_url + "/" + layer.feature.id, {method: 'DELETE'},this.options.fetch_options).then(() => {
       L.GeoJSON.prototype.removeLayer.call(this, layer);
     });
   },
@@ -196,25 +220,5 @@ function debounce(func, waitFor) {
         }
         timeout = setTimeout(() => resolve(func(...args)), waitFor);
     });
-}
-
-export async function sendData(url = "", data = {}, token="", method='PUT') {
-  // Default options are marked with *
-  const response = await fetch(url, {
-    method: method, // *GET, POST, PUT, DELETE, etc.
-    mode: "cors", // no-cors, *cors, same-origin
-    headers: {
-      "Content-Type": "application/json",
-      // Authorization: 'Bearer ' + token,
-    },
-    credentials: "include",
-    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    body: JSON.stringify(data), // body data type must match "Content-Type" header
-  });
-  if (response.ok) {
-    return response.json().catch((response) => response.text); // parses JSON response into native JavaScript objects
-  } else {
-    throw new Error(response);
-  }
 }
 

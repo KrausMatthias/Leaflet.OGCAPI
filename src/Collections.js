@@ -1,5 +1,5 @@
 import {FeatureCollection} from "./FeatureCollection.js"
-import {get_link} from "./utils.js"
+import {get_link, fetch_with} from "./utils.js"
 
 export class Collections {
 
@@ -64,22 +64,18 @@ export class Collections {
   }
 
   createCollection(layer_details){
-    let headers = {
-      "Content-Type": "application/json"
-    };
-    if(this.options.fetch_options.headers){
-      headers = {
-        ...this.options.fetch_options.headers,
-        headers
-      }
-    }
 
-    return fetch(this.endpoint + '/collections', {
-        ...this.options.fetch_options,
+    return fetch_with(
+      this.endpoint + '/collections', 
+      {
         method: 'POST',
-        headers: headers,
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify(layer_details),
-      }).then((response) => response.json())
+      },
+      this.options.fetch_options
+    ).then((response) => response.json())
     .then((metadata) => {
       metadata["endpoint"] = this.endpoint;
       let layer = new FeatureCollection(metadata, this.options);

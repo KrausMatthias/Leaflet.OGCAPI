@@ -9,3 +9,24 @@ export function get_link(links, rel, type=null, def=null){
   }
 }
 
+export function fetch_with(url, options={}, fetch_options={}) {
+  options = {
+    headers: {},
+    ...options
+  };
+
+    if(fetch_options.headers){
+      options.headers = {
+        ...fetch_options.headers,
+        ...options.headers
+      }
+    }
+
+    return fetch(url, options).then((response) => {
+      if (response.ok) {
+        return response
+      } else {
+        return Promise.reject(response)
+      }
+  })
+}
