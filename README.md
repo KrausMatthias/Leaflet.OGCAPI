@@ -8,6 +8,26 @@ Visualize and modify Layers from OGC API -- Features Servers in [Leaflet](https:
 
 See [demo.html](https://krausmatthias.github.io/Leaflet.OGCAPI/demo.html) for a minimal demo.
 
+## Collections
+
+Represents FeatureCollections offered by an OGC API as described in [OGC API -- Features 7.13 Collections](https://docs.ogc.org/is/17-069r4/17-069r4.html#_collections_)
+as a list of [FeatureCollection](#FeatureCollection) Leaflet Layers.
+This currently filters for collections with at least a link-relation ["items"](http://www.opengis.net/def/rel/ogc/1.0/items).
+
+### Methods
+
+|Method|Parameters|Response|
+|---|---|---|
+|constructor| <ul><li>URL to OGC API Basepath</li><li>[Collections Options](#options)</li></ul>| Collections instance |
+|getLayers|None|List of all [FeatureCollection](#featurecollection) layers.|
+|getLayer|collection_id|[FeatureCollection](#featurecollection) for the given collection id|
+|createCollection|[Collection Metadata](http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/collection.yaml)|Promise returning a [FeatureCollection](#featurecollection) on success.|
+
+### Options
+
+
+## FeatureCollection
+
 ## Features
 
  * Set fetch options to include headers or credentials for authentication

@@ -7,7 +7,7 @@ export class Collections {
   layers;
   map;
 
-  constructor(endpoint, options={}, jwt=undefined){
+  constructor(endpoint, options={}){
     this.endpoint = endpoint;
 
     this.options = {
