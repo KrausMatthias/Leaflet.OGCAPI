@@ -4,6 +4,8 @@ Pragmatic implementation of OGC API -- Features Parts [1](https://docs.ogc.org/i
 
 Visualize and modify Layers from OGC API -- Features Servers in [Leaflet](https://leafletjs.com/).
 
+This is still work in progress and takes some assumptions which are not fully standard compliant.
+
 ## Demo
 
 See [demo.html](https://krausmatthias.github.io/Leaflet.OGCAPI/demo.html) for a minimal demo.
@@ -25,29 +27,42 @@ This currently filters for collections with at least a link-relation ["items"](h
 
 ### Options
 
-
-## FeatureCollection
-
-## Features
-
- * Set fetch options to include headers or credentials for authentication
- * Subscribe to Feature Updates via SSE (not yet compliant to OGC API Spec, planned: [EDR - PubSub](https://docs.ogc.org/DRAFTS/23-057.html))
-
-* [FeatureCollections](https://docs.ogc.org/is/17-069r4/17-069r4.html#_collections_)
-     * Get all Collections from OGC API Server
-     * Setup a Layer for each FeatureCollection
-     * Create/Update/Delete Collections on the Server
- * [OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002r1.html)
- * [link-relations](https://docs.ogc.org/is/17-069r4/17-069r4.html#_link_relations) for resolving resources
-
-
-## Options
-
-| | |
+| Option | Description |
 | --- | --- |
 | fetch_options | Options applied to all fetch operations. Use this if you need to set e.g. Headers. |
 | pagination_limit | Maximum number of features to fetch in one batch. Default: Use Server default. |
 | feature_limit | Maximum total number of features to load. Default: unlimited. |
+
+Options from [Leaflet.GeoJSON](https://leafletjs.com/reference.html#geojson-option). These are applied to each [FeatureCollection](#featurecollection).
+
+## FeatureCollection
+
+Extends [Leaflet.GeoJSON](https://leafletjs.com/reference.html#geojson). Uses Feature IDs from the server to allow for seamless updates.
+
+### Methods
+
+|Method|Parameters|Response|
+|---|---|---|
+| constructor | <ul><li>[Collection Metadata](http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/collection.yaml)</li><li>[FeatureCollection Options](#options)</li></ul>| FeatureCollection instance |
+| configure | [Collection Metadata](http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/collection.yaml) | Promise. Updates the metadata of this FeatureCollection on success | 
+| subscribe | None. Requires link with relation ["hub"](https://docs.ogc.org/DRAFTS/23-057.html#link-relations) pointing to a SSE endpoint in metadata of this FeatureCollection. | None. Updates features in this FeatureCollection based on SSE events |
+| unsubscribe || None. Drops SSE stream |
+| delete || Promise. Deletes this collection from the server |
+| createFeature | Leaflet Layer implementing toGeojson | Promise. Creates this Layer as new Item in the FeatureCollection on the server. Adds the given layer to this FeatureCollection |
+| updateFeature | Leaflet Layer from this FeatureCollection | Promise. Updates this Layer on the server |
+| deleteFeature | Leaflet Layer from this FeatureCollection | Promise. Deletes this Layer on the server and removes it from this FeatureCollection  |
+
+More methods inherited from [Leaflet.GeoJSON](https://leafletjs.com/reference.html#geojson-option).
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| fetch_options | Options applied to all fetch operations. Use this if you need to set e.g. Headers. |
+| pagination_limit | Maximum number of features to fetch in one batch. Default: Use Server default. |
+| feature_limit | Maximum total number of features to load. Default: unlimited. |
+
+Options from [Leaflet.GeoJSON](https://leafletjs.com/reference.html#geojson-option).
 
 ## Tested OGC API Implementations
 
