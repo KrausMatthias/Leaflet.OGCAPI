@@ -25,6 +25,18 @@ export let FeatureCollection = L.GeoJSON.extend({
     // this token is used to ignore updates via the subscription for changes made by this layer instance.
     this.sync_token = "" + Math.random();
 
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        this.unsubscribe();
+      } else {
+        // Update if layer is currently added to the map 
+        if (this._map) {
+          this.load();
+          this.subscribe();
+        }
+      }
+    });
+
   },
 
 
@@ -58,7 +70,7 @@ export let FeatureCollection = L.GeoJSON.extend({
 
         this.addData(json);
 
-        if(!this._map){
+        if(!this._map || document.hidden){
           console.debug("Aborted pagination as layer is no longer visible on the map");
         } else if((this.options.feature_limit && offset + json.features.length >= this.options.feature_limit)){
           console.warn("Maximum number of features reached. There might be features not shown.")
