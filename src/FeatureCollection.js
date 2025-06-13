@@ -152,7 +152,7 @@ export let FeatureCollection = L.GeoJSON.extend({
       try{ layer.setStyle({'color': "grey"}); }catch{}
 
       return fetch_with(
-        this.options.items_url, {
+        this.options.items_url.split(/[?#]/)[0], {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
@@ -177,7 +177,7 @@ export let FeatureCollection = L.GeoJSON.extend({
     let feature = layer.toGeoJSON(5);
     feature.properties._sync_token = this.sync_token;
     debounce(fetch_with(
-      this.options.items_url + "/" + feature.id, 
+      this.options.items_url.split(/[?#]/)[0] + "/" + feature.id, 
       {
         method: 'PUT',
         headers: {
@@ -207,7 +207,11 @@ export let FeatureCollection = L.GeoJSON.extend({
 	},
 
   deleteFeature(layer) {
-    return fetch_with(this.options.items_url + "/" + layer.feature.id, {method: 'DELETE'},this.options.fetch_options).then(() => {
+    return fetch_with(
+      this.options.items_url.split(/[?#]/)[0] + "/" + layer.feature.id, 
+      {method: 'DELETE'},
+      this.options.fetch_options
+    ).then(() => {
       L.GeoJSON.prototype.removeLayer.call(this, layer);
     });
   },
