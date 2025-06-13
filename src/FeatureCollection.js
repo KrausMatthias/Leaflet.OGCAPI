@@ -155,7 +155,7 @@ export let FeatureCollection = L.GeoJSON.extend({
         this.options.items_url.split(/[?#]/)[0], {
           method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/geo+json",
           },
           body: JSON.stringify(feature), // body data type must match "Content-Type" header
         },
@@ -181,7 +181,7 @@ export let FeatureCollection = L.GeoJSON.extend({
       {
         method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/geo+json",
         },
         body: JSON.stringify(feature)
       }, 
