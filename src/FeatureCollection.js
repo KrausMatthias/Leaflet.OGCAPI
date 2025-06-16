@@ -149,7 +149,6 @@ export let FeatureCollection = L.GeoJSON.extend({
       let feature = layer.toGeoJSON(5);
       layer.feature = feature;
       feature.properties._sync_token = this.sync_token;
-      try{ layer.setStyle({'color': "grey"}); }catch{}
 
       return fetch_with(
         this.options.items_url.split(/[?#]/)[0], {
@@ -173,7 +172,6 @@ export let FeatureCollection = L.GeoJSON.extend({
   },
 
   updateFeature: function(layer) {
-    try{ layer.setStyle({'color': "grey"}); }catch{}
     let feature = layer.toGeoJSON(5);
     feature.properties._sync_token = this.sync_token;
     debounce(fetch_with(
