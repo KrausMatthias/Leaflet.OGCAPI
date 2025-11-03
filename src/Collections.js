@@ -1,13 +1,14 @@
 import {FeatureCollection} from "./FeatureCollection.js"
 import {get_link, fetch_with} from "./utils.js"
 
-export class Collections {
+export class Collections extends L.FeatureGroup {
 
   endpoint;
   layers;
   map;
 
   constructor(endpoint, options={}){
+    super(options);
     this.endpoint = endpoint;
 
     this.options = {
@@ -35,9 +36,11 @@ export class Collections {
         let items_url = get_link(metadata.links, "items", "application/geo+json");
         if(items_url){
           let layer = new FeatureCollection(metadata, this.options);
+
+          // TODO move this to addLayer??
           this.layers[metadata.id] = layer;
-          let event = new CustomEvent("lc:new-layer", {detail: layer});
-          document.dispatchEvent(event);
+          
+          this.fire("layeradd", {layer: layer});
         }else{
           console.info("Skipped collection without geojson items: " + metadata.title)
         }
@@ -45,13 +48,12 @@ export class Collections {
       });
     })
     .then(() => {
-      let event = new CustomEvent("lc:loaded", {detail: this});
-      document.dispatchEvent(event);
+      this.fire("load", this);
     })
     .catch((error) => {
       console.log(error);
       let event = new CustomEvent("lc:load-error", {detail: error});
-      document.dispatchEvent(event);
+      this.dispatchEvent(event);
     });
   }
 
@@ -81,8 +83,7 @@ export class Collections {
       let layer = new FeatureCollection(metadata, this.options);
 
       this.layers[metadata.id] = layer;
-      let event = new CustomEvent("lc:new-layer", {detail: layer});
-      document.dispatchEvent(event);
+      this.fire("layeradd", {layer: layer});
       return layer;
     });
   }

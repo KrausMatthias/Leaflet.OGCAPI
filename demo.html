@@ -71,8 +71,16 @@
       );
       pygeoapi_collections.addTo(map);
 
-      document.addEventListener("lc:new-layer", function(event) {
-        let layer = event.detail;
+      collections.on("layeradd", function(event) {
+        let layer = event.layer;
+        layerControl.addOverlay(layer, layer.options.metadata.title);
+      });
+      geoserver_collections.on("layeradd", function(event) {
+        let layer = event.layer;
+        layerControl.addOverlay(layer, layer.options.metadata.title);
+      });
+      pygeoapi_collections.on("layeradd", function(event) {
+        let layer = event.layer;
         layerControl.addOverlay(layer, layer.options.metadata.title);
       });
 
