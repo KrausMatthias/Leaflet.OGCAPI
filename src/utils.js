@@ -11,7 +11,7 @@ export function get_link(links, rel, type=null, def=null){
 
 export function fetch_with(url, options={}, fetch_options={}) {
   options = {
-    headers: {},
+    ...fetch_options,
     ...options
   };
 
