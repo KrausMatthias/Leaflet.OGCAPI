@@ -174,7 +174,7 @@ export let FeatureCollection = L.GeoJSON.extend({
   updateFeature: function(layer) {
     let feature = layer.toGeoJSON(5);
     feature.properties._sync_token = this.sync_token;
-    debounce(fetch_with(
+    return debounce(() => fetch_with(
       this.options.items_url.split(/[?#]/)[0] + "/" + feature.id, 
       {
         method: 'PUT',
@@ -188,7 +188,7 @@ export let FeatureCollection = L.GeoJSON.extend({
         if(this.options.onEachFeature){
           this.options.onEachFeature(layer.feature, layer, this);
         }
-    }), 500);
+    }), 500)();
   },
 
   addLayer: function (layer) {
